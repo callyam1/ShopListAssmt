@@ -1,16 +1,12 @@
 package com.mmgpt.shoplistgpt
 
 import android.os.Bundle
-import android.view.GestureDetector
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.mmgpt.shoplistgpt.adapter.CategorySummaryAdapter
 import com.mmgpt.shoplistgpt.databinding.FragmentCategoryBinding
@@ -36,36 +32,18 @@ class ShopCategoriesFragment : Fragment() {
         val adapter = CategorySummaryAdapter()
         binding.recyclerView.adapter = adapter
 
-        val gestureDetector = GestureDetectorCompat(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                // Convert raw screen coordinates to RecyclerView's coordinate system
-                val location = IntArray(2)
-                binding.recyclerView.getLocationOnScreen(location)
-                val x = e.rawX - location[0]
-                val y = e.rawY - location[1]
-                val child = binding.recyclerView.findChildViewUnder(x, y)
-                if (child != null &&
-                    binding.recyclerView.getChildAdapterPosition(child) != RecyclerView.NO_POSITION
-                ) {
-                    val categoryId = binding.recyclerView.getChildViewHolder(child).itemId
-                    val pagePosition = CategoryPageNavigation.pagePositionForCategoryId(
-                        viewModel.categories.value.orEmpty(),
-                        categoryId,
-                        planMode = false
-                    )
-                    if (pagePosition != null) {
-                        val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
-                        viewPager.currentItem = pagePosition
-                        return true
-                    }
-                }
-                return super.onDoubleTap(e)
+        binding.recyclerView.setOnItemDoubleTapListener { categoryId ->
+            val pagePosition = CategoryPageNavigation.pagePositionForCategoryId(
+                viewModel.categories.value.orEmpty(),
+                categoryId,
+                planMode = false
+            )
+            if (pagePosition != null) {
+                requireActivity().findViewById<ViewPager2>(R.id.viewPager).currentItem = pagePosition
+                true
+            } else {
+                false
             }
-        })
-
-        binding.recyclerView.setOnTouchListener { _, event ->
-            gestureDetector.onTouchEvent(event)
-            false
         }
 
         viewModel.categories.observe(viewLifecycleOwner) { list ->
