@@ -81,13 +81,18 @@ class PlanCategoriesFragment : Fragment() {
         val gestureDetector = GestureDetectorCompat(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 val child = binding.recyclerView.findChildViewUnder(e.x, e.y)
-                val position = child?.let { binding.recyclerView.getChildAdapterPosition(it) } ?: RecyclerView.NO_POSITION
-                if (position != RecyclerView.NO_POSITION) {
-                    val item = adapter.currentList.getOrNull(position)
-                    if (item?.isHeading == true) {
-                        val index = position - 1
+                if (child != null &&
+                    binding.recyclerView.getChildAdapterPosition(child) != RecyclerView.NO_POSITION
+                ) {
+                    val categoryId = binding.recyclerView.getChildViewHolder(child).itemId
+                    val pagePosition = CategoryPageNavigation.pagePositionForCategoryId(
+                        viewModel.categories.value.orEmpty(),
+                        categoryId,
+                        planMode = true
+                    )
+                    if (pagePosition != null) {
                         val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
-                        viewPager.currentItem = index + 1
+                        viewPager.currentItem = pagePosition
                         return true
                     }
                 }
@@ -144,4 +149,3 @@ class PlanCategoriesFragment : Fragment() {
         _binding = null
     }
 }
-

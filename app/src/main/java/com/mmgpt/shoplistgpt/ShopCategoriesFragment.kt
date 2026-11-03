@@ -44,11 +44,20 @@ class ShopCategoriesFragment : Fragment() {
                 val x = e.rawX - location[0]
                 val y = e.rawY - location[1]
                 val child = binding.recyclerView.findChildViewUnder(x, y)
-                val position = child?.let { binding.recyclerView.getChildAdapterPosition(it) } ?: RecyclerView.NO_POSITION
-                if (position != RecyclerView.NO_POSITION) {
-                    val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
-                    viewPager.currentItem = position
-                    return true
+                if (child != null &&
+                    binding.recyclerView.getChildAdapterPosition(child) != RecyclerView.NO_POSITION
+                ) {
+                    val categoryId = binding.recyclerView.getChildViewHolder(child).itemId
+                    val pagePosition = CategoryPageNavigation.pagePositionForCategoryId(
+                        viewModel.categories.value.orEmpty(),
+                        categoryId,
+                        planMode = false
+                    )
+                    if (pagePosition != null) {
+                        val viewPager = requireActivity().findViewById<ViewPager2>(R.id.viewPager)
+                        viewPager.currentItem = pagePosition
+                        return true
+                    }
                 }
                 return super.onDoubleTap(e)
             }
